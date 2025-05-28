@@ -1,7 +1,8 @@
 import os
+
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
 
 # 创建数据库实例和登录管理器实例
 db = SQLAlchemy()
@@ -23,7 +24,6 @@ def create_app():
 
     # 导入模型并初始化数据库（避免循环导入）
     with app.app_context():
-        from .models import User  # 延迟导入模型，避免循环依赖
         db.create_all()  # 创建所有数据库表
 
     # 设置用户加载函数
