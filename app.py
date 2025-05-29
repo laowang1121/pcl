@@ -68,9 +68,14 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
         if len(username) < 6 or len(password) < 6:
             flash('用户名和密码长度必须至少6位', 'warning')
+            return render_template('register.html')
+
+        if password != confirm_password:
+            flash('两次输入的密码不一致', 'warning')
             return render_template('register.html')
 
         if User.query.filter_by(username=username).first():

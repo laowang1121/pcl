@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, TextAreaField
+from wtforms.fields.choices import SelectField
 from wtforms.validators import DataRequired
 from flask_wtf.file import FileField, FileAllowed
 
@@ -7,7 +8,12 @@ class ProfileForm(FlaskForm):
     nickname = StringField('昵称', validators=[DataRequired()])
     gender = StringField('性别', validators=[DataRequired()])
     birthday = DateField('生日', format='%Y-%m-%d', validators=[DataRequired()])
-    zodiac = StringField('星座')
+    zodiac = SelectField('星座', choices=[
+        ('白羊座', '白羊座'), ('金牛座', '金牛座'), ('双子座', '双子座'),
+        ('巨蟹座', '巨蟹座'), ('狮子座', '狮子座'), ('处女座', '处女座'),
+        ('天秤座', '天秤座'), ('天蝎座', '天蝎座'), ('射手座', '射手座'),
+        ('摩羯座', '摩羯座'), ('水瓶座', '水瓶座'), ('双鱼座', '双鱼座')
+    ])
     location = StringField('现居地')
     occupation = StringField('职业')
     bio = TextAreaField('个人介绍')

@@ -37,6 +37,10 @@
                 <label for="password" class="form-label">密码</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">确认密码</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+            </div>
             <button type="submit" class="btn btn-semi-transparent">注册</button>
             <a href="{{ url_for('login') }}" class="btn btn-semi-transparent">返回登录</a> <!-- 跳转到登录按钮 -->
         </form>

@@ -72,20 +72,7 @@
         <!-- 星座字段：选择星座 -->
         <div class="mb-3">
             <label for="zodiac" class="form-label">星座</label>
-            <select class="form-control" name="zodiac" id="zodiac">
-                <option value="白羊座">白羊座</option>
-                <option value="金牛座">金牛座</option>
-                <option value="双子座">双子座</option>
-                <option value="巨蟹座">巨蟹座</option>
-                <option value="狮子座">狮子座</option>
-                <option value="处女座">处女座</option>
-                <option value="天秤座">天秤座</option>
-                <option value="天蝎座">天蝎座</option>
-                <option value="射手座">射手座</option>
-                <option value="摩羯座">摩羯座</option>
-                <option value="水瓶座">水瓶座</option>
-                <option value="双鱼座">双鱼座</option>
-            </select>
+            {{ form.zodiac(class="form-control") }}
         </div>
         <div class="mb-3">
             <label for="occupation" class="form-label">职业</label>
