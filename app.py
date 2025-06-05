@@ -1,11 +1,15 @@
 import os
 from flask import request, redirect, render_template, url_for, flash, session, jsonify, send_from_directory, current_app
-from flask_login import login_required, current_user, login_user, LoginManager
+from flask_login import login_required, current_user, login_user, LoginManager, logout_user
 from werkzeug.utils import secure_filename
 from __init__ import create_app, db  # 正确导入db
 from models import Article, User
 from forms import EditArticleForm, ProfileForm
 from flask_bcrypt import Bcrypt
+from datetime import timedelta
+
+
+
 
 # 创建 Flask 应用实例
 app = create_app()
@@ -32,6 +36,13 @@ app.config['SECRET_KEY'] = '123'
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# 自定义过滤器：将 UTC 时间转换为中国时间
+@app.template_filter('china_time')
+def china_time_filter(dt):
+    if dt is None:
+        return ''
+    return (dt + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
 
 # 主页路由
 @app.route('/')
@@ -105,6 +116,7 @@ def view_users():
 @app.route('/logout')
 @login_required
 def logout():
+    logout_user()  # 这行必须加
     session.pop('username', None)
     flash('您已登出', 'info')
     return redirect(url_for('home'))
@@ -141,26 +153,31 @@ def add_article():
 def edit_article(id):
     article = Article.query.get_or_404(id)
     form = EditArticleForm(obj=article)
-
     if form.validate_on_submit():
         article.title = form.title.data
         article.summary = form.summary.data
         article.content = form.content.data
 
-        if 'cover_image' in request.files:
-            cover_image = request.files['cover_image']
-            if cover_image and cover_image.filename != '':
-                filename = secure_filename(cover_image.filename)
-                cover_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                cover_image.save(cover_path)
-                article.cover_image = filename
+        # 处理封面图片
+        file = request.files.get('cover_image')
+        if file and file.filename and allowed_file(file.filename):
+            import uuid
+            ext = file.filename.rsplit('.', 1)[1].lower()
+            filename = f"{uuid.uuid4().hex}.{ext}"
+            cover_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(cover_path)
+            # 删除旧封面
+            if article.cover_image and article.cover_image != filename:
+                old_path = os.path.join(app.config['UPLOAD_FOLDER'], article.cover_image)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            article.cover_image = filename
 
         db.session.commit()
         flash('文章已更新！', 'success')
         return redirect(url_for('view_article', article_id=article.id))
 
     return render_template('edit_article.html', form=form, article=article)
-
 # 文章显示
 @app.route('/view_article/<int:article_id>')
 def view_article(article_id):

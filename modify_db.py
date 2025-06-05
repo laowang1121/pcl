@@ -1,7 +1,7 @@
 import sqlite3
 
 # 连接到数据库文件
-conn = sqlite3.connect(r'D:\javaxmu\one\pcf\instance\blog.db')
+conn = sqlite3.connect(r'D:\javaxmu\one\前端项目\my_flask_project\flaskProject3\instance\blog.db')
 cursor = conn.cursor()
 
 # 添加新列

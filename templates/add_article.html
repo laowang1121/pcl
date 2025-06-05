@@ -63,8 +63,8 @@
         })
         .then(data => {
             if (data.location) {
-                const imgTag = `<img src="${data.location}" alt="Uploaded Image" style="max-width: 100%;">`;
-                document.getElementById('content').value += imgTag; // 将图片插入到内容区域
+                const imgTag = `<div style="text-align: center;"><img src="${data.location}" alt="Uploaded Image" style="max-width: 100%;"></div>\n`;
+document.getElementById('content').value += imgTag;// 将图片插入到内容区域
                 // 更新预览框
                 const preview = document.getElementById('imagePreview');
                 preview.src = data.location;

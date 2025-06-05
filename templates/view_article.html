@@ -109,20 +109,22 @@
 </head>
 <body>
    <!-- 固定导航栏 -->
-    <nav>
-        <a href="{{ url_for('edit_article', id=article.id) }}">编辑文章</a>
-        <a href="{{ url_for('home') }}">返回主页</a>
-        {% if current_user == article.author or current_user.is_admin %}
-        <form action="{{ url_for('delete_article', id=article.id) }}" method="POST" style="display: inline;">
+   <nav>
+    {% if current_user.is_authenticated and (current_user.id == article.user_id or current_user.is_admin) %}
+        <a href="{{ url_for('edit_article', id=article.id) }}">修改文章</a>
+        <form action="{{ url_for('delete_article', id=article.id) }}"
+              method="POST"
+              style="display: inline;"
+              onsubmit="return confirm('确定要删除这篇文章吗？此操作不可恢复！');">
             <button type="submit" class="delete-button">删除文章</button>
         </form>
-        {% endif %}
-    </nav>
-
+    {% endif %}
+    <a href="{{ url_for('home') }}">返回主页</a>
+</nav>
 
     <div class="article-info">
     <h1>{{ article.title }}</h1>
-    <p><strong>作者：</strong> {{ article.author.username }} | <strong>时间：</strong> {{ article.created_at }}</p>
+    <p><strong>作者：</strong> {{ article.author.username }} | <strong>时间：</strong> {{ article.created_at|china_time }}</p>
     <p><strong>摘要：</strong> {{ article.summary }}</p>
     </div>
     <div class="content-box">
