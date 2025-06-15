@@ -6,7 +6,7 @@ cursor = conn.cursor()
 
 # 添加新列
 try:
-    cursor.execute("ALTER TABLE articles ADD COLUMN cover_image TEXT;")
+    cursor.execute("ALTER TABLE articles ADD COLUMN category_id TEXT;")
     print("Column added successfully.")
 except sqlite3.OperationalError as e:
     print(f"Error: {e}")

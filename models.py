@@ -41,6 +41,11 @@ class Article(db.Model):
     author = db.relationship('User', back_populates='articles')
     # 关联图片
     images = db.relationship('Image', back_populates='article', cascade='all, delete-orphan')
+    # 关联评论
+    comments = db.relationship('Comment', back_populates='article', cascade='all, delete-orphan')
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    category = db.relationship('Category', back_populates='articles')
+    tags = db.relationship('Tag', secondary='article_tag', back_populates='articles')
 
     def __repr__(self):
         return f'<Article {self.title}>'
@@ -57,6 +62,50 @@ class Image(db.Model):
 
     def __repr__(self):
         return f'<Image {self.filename}>'
+
+
+# 评论模型
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), nullable=False)  # 修改这里
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    replies = db.relationship('Comment', backref=db.backref('parent', remote_side=[id]), lazy='select')
+    user = db.relationship('User')
+    article = db.relationship('Article', back_populates='comments')
+
+    def __repr__(self):
+        return f'<Comment {self.id}>'
+
+
+# 分类模型
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    articles = db.relationship('Article', back_populates='category')
+
+    def __repr__(self):
+        return f'<Category {self.name}>'
+
+
+# 标签与文章关联表
+article_tag = db.Table('article_tag',
+    db.Column('article_id', db.Integer, db.ForeignKey('articles.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+)
+
+# 标签模型
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(30), unique=True, nullable=False)
+    articles = db.relationship('Article', secondary=article_tag, back_populates='tags')
+
+    def __repr__(self):
+        return f'<Tag {self.name}>'
 
 
 # 初始化数据库

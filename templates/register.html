@@ -9,11 +9,11 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 </head>
-<body class="register-page">
-<div class="abc">
-    <div class="container mt-5">
-        <h2 class="reg">注册</h2>
-         <!-- 显示闪存消息 -->
+<body class="register-page" style="min-height: 100vh; background: url({{ url_for('static', filename='dongtu.png') }}) no-repeat center center fixed; background-size: cover;">
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card shadow-lg p-4" style="border-radius: 2rem; min-width: 420px; max-width: 95vw; background: rgba(255,255,255,0.97);">
+        <h2 class="reg text-center mb-4" style="font-size:2.5rem; font-weight:900; color:#007bff; letter-spacing:3px; text-shadow:0 2px 12px #a1c4fd;">注册新账号</h2>
+        <!-- 显示闪存消息 -->
         {% with messages = get_flashed_messages(with_categories=True) %}
             {% if messages %}
                 <div id="flash-message" class="alert alert-{{ messages[0][0] }} alert-dismissible fade show" role="alert">
@@ -27,22 +27,38 @@
                 </div>
             {% endif %}
         {% endwith %}
-
-        <form method="POST" onsubmit="return validateForm()">
+        <form method="POST" onsubmit="return validateForm()" autocomplete="off">
             <div class="mb-3">
                 <label for="username" class="form-label">用户名</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <input type="text" class="form-control form-control-lg" id="username" name="username" required placeholder="6位及以上，仅字母数字">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">邮箱</label>
+                <input type="email" class="form-control form-control-lg" id="email" name="email" required placeholder="请输入有效邮箱">
+                <div class="input-group mt-2">
+                    <input type="text" class="form-control" id="email_code" name="email_code" placeholder="输入邮箱验证码" required>
+                    <button type="button" class="btn btn-outline-primary" id="sendEmailCodeBtn" onclick="sendEmailCode()">发送验证码</button>
+                </div>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">密码</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+                <input type="password" class="form-control form-control-lg" id="password" name="password" required placeholder="6位及以上密码">
             </div>
             <div class="mb-3">
                 <label for="confirm_password" class="form-label">确认密码</label>
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                <input type="password" class="form-control form-control-lg" id="confirm_password" name="confirm_password" required placeholder="请再次输入密码">
             </div>
-            <button type="submit" class="btn btn-semi-transparent">注册</button>
-            <a href="{{ url_for('login') }}" class="btn btn-semi-transparent">返回登录</a> <!-- 跳转到登录按钮 -->
+            <div class="mb-3">
+                <label for="captcha" class="form-label">验证码</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="captcha" name="captcha" required placeholder="请输入下方验证码">
+                    <span class="input-group-text p-0" style="background: none; border: none;">
+                        <img id="captcha-img" src="/captcha" alt="验证码" style="height:40px;cursor:pointer;border-radius:8px;" onclick="refreshCaptcha()">
+                    </span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3 shadow">注册</button>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary w-100 mt-2">返回登录</a>
         </form>
     </div>
 </div>
@@ -54,10 +70,10 @@
             const flashMessage = document.getElementById('flash-message');
             if (flashMessage) {
                 setTimeout(() => {
-                    flashMessage.classList.remove('show'); // 移除显示类
-                    flashMessage.classList.add('fade');   // 添加渐隐类
-                    setTimeout(() => flashMessage.remove(), 150); // 移除 DOM 元素
-                }, 5000); // 三秒后开始隐藏
+                    flashMessage.classList.remove('show');
+                    flashMessage.classList.add('fade');
+                    setTimeout(() => flashMessage.remove(), 150);
+                }, 5000);
             }
         };
 
@@ -65,7 +81,9 @@
         function validateForm() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-
+            const email = document.getElementById('email').value;
+            const email_code = document.getElementById('email_code').value;
+            const captcha = document.getElementById('captcha').value;
             if (username.length < 6) {
                 alert('账号长度不能少于6位');
                 return false;
@@ -74,7 +92,40 @@
                 alert('密码长度不能少于6位');
                 return false;
             }
+            if (!/^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                alert('请输入有效邮箱');
+                return false;
+            }
+            if (!email_code) {
+                alert('请输入邮箱验证码');
+                return false;
+            }
+            if (!captcha) {
+                alert('请输入验证码');
+                return false;
+            }
             return true;
+        }
+
+        // 刷新验证码图片
+        function refreshCaptcha() {
+            document.getElementById('captcha-img').src = '/captcha?' + Math.random();
+        }
+
+        // 发送邮箱验证码（前端模拟，实际需后端支持）
+        function sendEmailCode() {
+            const email = document.getElementById('email').value;
+            if (!/^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                alert('请输入有效邮箱后再发送验证码');
+                return;
+            }
+            document.getElementById('sendEmailCodeBtn').innerText = '已发送';
+            document.getElementById('sendEmailCodeBtn').disabled = true;
+            setTimeout(() => {
+                document.getElementById('sendEmailCodeBtn').innerText = '发送验证码';
+                document.getElementById('sendEmailCodeBtn').disabled = false;
+            }, 60000);
+            alert('验证码已发送到邮箱（模拟，需后端实现）');
         }
     </script>
 </body>

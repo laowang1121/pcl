@@ -16,15 +16,35 @@
         }
         .login-container {
             margin: auto;
-            background-color: rgb(255,255,255,0.7%);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            background: rgba(255,255,255,0.92);
+            padding: 36px 32px 28px 32px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
             width: 400px;
+            max-width: 95vw;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            transition: box-shadow 0.3s;
+        }
+        .login-container:hover {
+            box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+        }
+        .login-container h2 {
+            font-weight: 700;
+            color: #007bff;
+            letter-spacing: 2px;
+        }
+        .login-container .form-label {
+            font-weight: 500;
+        }
+        .login-container .btn-primary {
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .login-container .btn-outline-primary, .login-container .btn-outline-secondary {
+            font-weight: 500;
         }
     </style>
 </head>
@@ -32,22 +52,20 @@
 
 <div class="login-container">
     <h2 class="text-center mb-4">登录</h2>
-    <!-- 表单 action 改为 Flask 的 url_for -->
     <form action="{{ url_for('login') }}" method="POST">
         <div class="mb-3">
             <label for="username" class="form-label">用户名</label>
-            <!-- 默认值设置为后端传递的 username -->
             <input type="text" class="form-control" id="username" name="username" value="{{ username }}" required>
         </div>
         <div class="mb-3">
             <label for="password" class="form-label">密码</label>
-            <!-- 默认值设置为后端传递的 password -->
             <input type="password" class="form-control" id="password" name="password" value="{{ password }}" required>
         </div>
         <button type="submit" class="btn btn-primary w-100">登录</button>
     </form>
-    <div class="text-center mt-3">
-        <a class="btn btn-primary w-100" href="{{ url_for('register') }}">注册</a>
+    <div class="text-center mt-3 d-flex flex-column gap-2">
+        <a class="btn btn-outline-primary w-100" href="{{ url_for('register') }}">注册</a>
+        <a class="btn btn-outline-secondary w-100" href="{{ url_for('home') }}">返回主页</a>
     </div>
 </div>
 

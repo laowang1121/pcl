@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>添加文章</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+    .select2-selection__choice {
+        display: none !important;
+    }
+    </style>
 </head>
 <body>
 
@@ -35,6 +41,25 @@
             <img id="imagePreview" src="" alt="上传的图片" style="display: none; max-width: 80%; border: 1px solid #ddd; padding: 5px;">
         </div>
             </div>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">分类</label>
+            {{ form.category(class="form-select", id="category-select") }}
+            {% for error in form.category.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="tags" class="form-label">标签（可多选）</label>
+            <select id="tags-select" name="tags" multiple="multiple" style="width:100%">
+                {% for tag in all_tags %}
+                    <option value="{{ tag.id }}" data-category="{{ tag.category_name }}">{{ tag.name }}</option>
+                {% endfor %}
+            </select>
+            <div id="selected-tags-box" class="mt-2" style="min-height:38px;"></div>
+            {% for error in form.tags.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
         </div>
         {{ form.hidden_tag() }}
         <button type="submit" class="btn btn-primary">提交</button>
@@ -80,9 +105,77 @@ document.getElementById('content').value += imgTag;// 将图片插入到内容�
             alert('图片上传出现错误');
         });
     }
+
+    // 分类与标签映射（后端渲染）
+    const tagMap = {};
+    {% for tag in all_tags %}
+        if (!tagMap['{{ tag.category_name }}']) tagMap['{{ tag.category_name }}'] = [];
+        tagMap['{{ tag.category_name }}'].push({ id: {{ tag.id }}, name: "{{ tag.name }}" });
+    {% endfor %}
+    $(document).ready(function() {
+        // 分类与标签映射已在 tagMap 中
+        let allTagList = [];
+        {% for tag in all_tags %}
+            allTagList.push({ id: '{{ tag.id }}', name: "{{ tag.name }}", category: "{{ tag.category_name }}" });
+        {% endfor %}
+        function refreshTags() {
+            const catText = $('#category-select option:selected').text();
+            const tags = tagMap[catText] || [];
+            const $tags = $('#tags-select');
+            // 保留所有已选标签
+            const selected = $tags.val() || [];
+            $tags.empty();
+            // 当前分类下的标签
+            tags.forEach(tag => {
+                const option = new Option(tag.name, tag.id, false, selected.includes(tag.id.toString()));
+                $tags.append(option);
+            });
+            // 其他分类已选标签也加入（但隐藏）
+            allTagList.forEach(tag => {
+                if (!tags.some(t => t.id == tag.id) && selected.includes(tag.id)) {
+                    const option = new Option(tag.name, tag.id, true, true);
+                    option.setAttribute('style', 'display:none;');
+                    $tags.append(option);
+                }
+            });
+            $tags.val(selected).trigger('change');
+        }
+        $('#tags-select').select2({
+            placeholder: '请选择标签',
+            allowClear: false,
+            width: '100%',
+            closeOnSelect: false,
+            templateSelection: function() { return ''; }
+        });
+        function renderSelectedTags() {
+            const selected = $('#tags-select').val() || [];
+            const $box = $('#selected-tags-box');
+            $box.empty();
+            selected.forEach(function(val) {
+                // 从 allTagList 找到标签名
+                const tagObj = allTagList.find(t => t.id == val);
+                const text = tagObj ? tagObj.name : val;
+                const tag = $(`<span class='badge bg-primary me-1 mb-1' style='cursor:pointer;' data-id='${val}'>${text} <span aria-hidden='true'>&times;</span></span>`);
+                tag.on('click', function() {
+                    // 移除选中
+                    const newVals = $('#tags-select').val().filter(v => v !== val);
+                    $('#tags-select').val(newVals).trigger('change');
+                });
+                $box.append(tag);
+            });
+        }
+        $('#tags-select').on('change', renderSelectedTags);
+        $('#category-select').on('change', function() {
+            refreshTags();
+            renderSelectedTags();
+        });
+        refreshTags();
+        renderSelectedTags();
+    });
 </script>
 
 <!-- 引入Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </body>
 </html>

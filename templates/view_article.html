@@ -4,113 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ article.title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    /* 全局布局 */
-    body {
-        display: flex;
-        flex-direction: column;  /* 竖直排列 */
-        justify-content: flex-start; /* 保证标题和内容不重叠 */
-        align-items: center;      /* 水平居中 */
-        margin: 0;                /* 去除默认的外边距 */
-        background-color: #f4f4f4; /* 背景色（可以根据需求修改） */
-    }
-
-       /* 导航栏样式 */
-      nav {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          background-color: #ffffff; /* 不透明背景色 */
-          color: white;
-          display: flex;
-          justify-content: flex-end; /* 内容靠右对齐 */
-          align-items: center;
-          padding: 10px 5px;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-          z-index: 1000;
-          font-size: 14px; /* 减小字体大小 */
-    }
-        nav a, nav form {
-            display: inline-block;
-            margin: 0 10px;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            background-color: #007bff;
-            transition: background-color 0.3s ease;
-        }
-
-        nav a:hover {
-            background-color: #0056b3;
-        }
-
-        nav .delete-button {
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-
-        nav .delete-button:hover {
-            background-color: darkred;
-        }
-
-
-    /* 文章信息部分样式 */
-    .article-info {
-        text-align: center;
-        margin-top: 60px;  /* 保证与页面顶部有间隔 */
-        margin-bottom: 20px;  /* 控制标题和内容之间的间距 */
-    }
-    .add{
-         text-align: center;
-         display: inline-block;  /* 使按钮并排显示 */
-        margin: 0 10px;
-    }
-    /* 设置内容盒子，宽度占屏幕的一半，且自适应高度 */
-    .content-box {
-        width: 50%;               /* 占屏幕一半 */
-        max-width: 800px;         /* 限制最大宽度 */
-        padding: 20px;            /* 内边距 */
-        background-color: white; /* 背景颜色 */
-        border-radius: 10px;      /* 圆角 */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影 */
-        overflow-y: auto;         /* 如果内容过多，显示滚动条 */
-        margin-bottom: 20px;      /* 给内容框与页面底部留空 */
-    }
-
-    /* 文章内容文本的样式 */
-    .article-content {
-        text-align: left;  /* 使文本居中 */
-        margin: 0 auto;  /* 使整个内容块居中 */
-        max-width: 800px;  /* 设置最大宽度，防止内容过宽 */
-    }
-
-    /* 设置文章内容图片的最大宽度和最大高度 */
-   .related-images {
-        display: block;         /* 让图片成为块级元素 */
-        margin-left: auto;      /* 自动左边距 */
-        max-width: 80%;         /* 最大宽度为80% */
-        max-height: 400px;      /* 限制最大高度 */
-        width: auto;            /* 自适应宽度 */
-        height: auto;           /* 自适应高度 */
-        border: 1px solid #ddd; /* 给图片添加边框 */
-      
-    }
-</style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
    <!-- 固定导航栏 -->
    <nav>
-    {% if current_user.is_authenticated and (current_user.id == article.user_id or current_user.is_admin) %}
+    {% if current_user.is_authenticated and current_user.id == article.user_id %}
         <a href="{{ url_for('edit_article', id=article.id) }}">修改文章</a>
         <form action="{{ url_for('delete_article', id=article.id) }}"
               method="POST"
@@ -122,26 +21,120 @@
     <a href="{{ url_for('home') }}">返回主页</a>
 </nav>
 
-    <div class="article-info">
-    <h1>{{ article.title }}</h1>
-    <p><strong>作者：</strong> {{ article.author.username }} | <strong>时间：</strong> {{ article.created_at|china_time }}</p>
-    <p><strong>摘要：</strong> {{ article.summary }}</p>
-    </div>
     <div class="content-box">
-    <div class="article-content">
-        <h3 style="text-align: center">文章内容</h3>
-        <p>{{ article.content.replace('\n', '<br>')|safe }}</p>
+        <!-- 文章头部信息 -->
+        <div class="article-meta" style="margin-bottom: 20px;">
+            <h1 style="margin-bottom: 10px;">{{ article.title }}</h1>
+            <div style="color: #888; font-size: 15px; margin-bottom: 6px;">
+                <span>作者：{{ article.author.username }}</span>
+                <span style="margin-left: 20px;">时间：{{ article.created_at|china_time }}</span>
+            </div>
+            <div style="font-size: 16px; color: #555; margin-bottom: 10px;">
+                <strong>摘要：</strong>{{ article.summary }}
+            </div>
+        </div>
+        <div class="article-content">
+            <h3 style="text-align: center">文章内容</h3>
+            <p>{{ article.content.replace('\n', '<br>')|safe }}</p>
+        </div>
+        {% if images %}
+        <div class="related-images">
+            <h4>相关图片</h4>
+            {% for image in images %}
+            <img src="{{ url_for('uploaded_file', filename=image.filename) }}" alt="图片">
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- 标签放到内容盒子最下方 -->
+        {% if article.tags %}
+        <div style="margin-top: 24px;">
+        {% for tag in article.tags %}
+            <span class="tag-badge">{{ tag.name }}</span>
+        {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
-    <!-- 显示文章中的图片 -->
-    {% if images %}
-<div class="related-images">
-    <h4>相关图片</h4>
-    {% for image in images %}
-    <img src="{{ url_for('uploaded_file', filename=image.filename) }}" alt="图片">
-    {% endfor %}
-</div>
-{% endif %}
+    <!-- 评论区 -->
+    <div id="comment-section" class="comment-section">
+    <h3>评论区</h3>
+    {% if current_user.is_authenticated %}
+    <form method="POST" action="{{ url_for('article_detail', article_id=article.id) }}#comment-section" class="comment-form" style="width:100%;">
+        {{ form.hidden_tag() }}
+        <div class="mb-3" style="width:100%;">
+            {{ form.content(class="form-control", rows="3", placeholder="请输入评论内容", style="width:100%;") }}
+        </div>
+        <div style="text-align:center;">
+        <button type="submit" class="btn btn-primary">发送</button>
     </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info text-center">请 <a href="{{ url_for('login') }}">登录</a> 后参与评论</div>
+    {% endif %}
+
+    <!-- 修复样式问题，改用 CSS 类控制缩进 -->
+    {% macro render_comment(comment, article, form, current_user, is_child=False) %}
+<li class="comment-item {% if is_child %}child-comment{% endif %}" style="margin-top: 8px;">
+    <div class="comment-header" style="display: flex; align-items: center;">
+        <span class="fw-bold">
+            {% if comment.parent and comment.parent.user %}
+                {{ comment.user.nickname or comment.user.username }} 回复 {{ comment.parent.user.nickname or comment.parent.user.username }}
+            {% else %}
+                {{ comment.user.nickname or comment.user.username }}
+            {% endif %}
+        </span>
+    </div>
+    <div class="comment-content" style="white-space: pre-wrap;">{{ comment.content }}</div>
+    <div style="margin-top: 8px;">
+        <span class="text-muted small">{{ comment.created_at|china_time }}</span>
+        {% if current_user.is_authenticated and (current_user.id == comment.user_id or (comment.parent and comment.parent.user and current_user.id == comment.parent.user.id)) %}
+        <form method="POST" action="{{ url_for('delete_comment', comment_id=comment.id, article_id=article.id) }}#comment-section" style="display:inline; margin-left: 16px;">
+            <button type="submit" class="btn btn-sm btn-danger ms-2" onclick="return confirm('确定要删除这条评论吗？');">删除</button>
+        </form>
+        {% endif %}
+        {% if current_user.is_authenticated %}
+        <button class="btn btn-sm btn-outline-secondary ms-2" type="button" onclick="showReplyForm('{{ comment.id }}')">回复</button>
+        {% endif %}
+    </div>
+    <form id="reply-form-{{ comment.id }}" method="POST" action="{{ url_for('reply_comment', comment_id=comment.id, article_id=article.id) }}#comment-section" style="display:none; margin-top:10px;">
+        <div class="mb-2">
+            <textarea name="reply_content" class="form-control" rows="2" placeholder="输入回复内容"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">发送回复</button>
+        <button type="button" class="btn btn-secondary btn-sm ms-2" onclick="hideReplyForm('{{ comment.id }}')">取消</button>
+    </form>
+    {% if comment.replies and comment.replies|length > 0 %}
+    <ul class="child-comments" style="margin-top: 8px;">
+        {% for reply in comment.replies %}
+            {{ render_comment(reply, article, form, current_user, is_child=True) }}
+        {% endfor %}
+    </ul>
+    {% endif %}
+</li>
+{% endmacro %}
+
+<!-- 使用宏渲染评论 -->
+<ul class="comment-list">
+    {% for comment in comments %}
+        {{ render_comment(comment, article, form, current_user) }}
+    {% endfor %}
+</ul>
+
+<!-- 修复 JavaScript 语法问题 -->
+<script>
+function showReplyForm(id) {
+    document.getElementById('reply-form-' + id).style.display = 'block';
+}
+function hideReplyForm(id) {
+    document.getElementById('reply-form-' + id).style.display = 'none';
+}
+</script>
+
+<!-- 添加 CSS 样式 -->
+<style>
+.child-comment {
+    margin-left: 32px;
+}
+</style>
 </body>
 </html>
